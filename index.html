@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Dashboard - Camera Enabled</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <!-- ส่วนที่ 1: ล็อกอิน (Passcode 555) -->
+  <div id="loginSection" class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-100 text-center">
+    <h2 class="text-2xl font-bold text-indigo-600 mb-1">เข้าสู่ระบบเจ้าหน้าที่</h2>
+    <p class="text-gray-400 text-sm mb-6">Staff Login (GitHub Hosted)</p>
+    
+    <div class="space-y-4">
+      <input type="password" id="passcodeInput" placeholder="Enter Passcode (555)" 
+             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-xl font-mono tracking-widest">
+      <button onclick="checkLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition duration-200">
+        Login
+      </button>
+    </div>
+  </div>
+
+  <!-- ส่วนที่ 2: หน้าหลักการสแกนผ่านกล้องสด -->
+  <div id="mainSection" class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-100 hidden">
+    <div class="text-center mb-4 border-b pb-3">
+      <h2 class="text-xl font-bold text-gray-800">ระบบสแกนคิวอาร์โค้ดหน้างาน</h2>
+      <p class="text-xs text-green-600 font-semibold">✓ เปิดโหมดใช้งานกล้องถ่ายรูปเรียบร้อย</p>
+    </div>
+
+    <!-- พื้นที่แสดงกล้องสแกนจริง -->
+    <div id="qr-reader" class="w-full bg-black rounded-lg overflow-hidden border border-gray-200 mb-4 shadow-inner" style="min-h: 250px;"></div>
+    
+    <!-- ช่องป้อนรหัสสำรองกรณีพิมพ์มือ -->
+    <div class="space-y-2 mb-6">
+      <div class="flex gap-2">
+        <input type="text" id="manualIdInput" placeholder="หรือพิมพ์รหัสเอง เช่น A001" onkeypress="if(event.keyCode===13) searchManual()"
+               class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-lg uppercase tracking-wider">
+        <button onclick="searchManual()" class="bg-gray-800 text-white px-5 py-2 rounded-lg text-sm">ค้นหา</button>
+      </div>
+    </div>
+
+    <!-- ผลลัพธ์ปุ่มกดทำรายการ -->
+    <div id="resultBox" class="hidden border-t pt-4 space-y-4">
+      <div class="bg-indigo-50 p-4 rounded-lg">
+        <p class="text-xs text-indigo-500 font-bold uppercase">ข้อมูลผู้เข้าร่วมงาน</p>
+        <h3 id="resName" class="text-lg font-bold text-gray-800 mt-1">-</h3>
+        <p id="resId" class="text-sm text-gray-600 font-mono">-</p>
+      </div>
+
+      <div class="space-y-3">
+        <button id="souvenirBtn" onclick="actionSubmit('souvenir')" class="w-full py-3 px-4 rounded-lg text-white font-medium shadow"></button>
+        <button id="lunchBtn" onclick="actionSubmit('lunch')" class="w-full py-3 px-4 rounded-lg text-white font-medium shadow"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <script>
+    // ⚠️ นำลิงก์ Web App URL ที่ได้จาก Google Apps Script มาใส่ตรงนี้ครับ
+    const WEB_APP_URL = "https://script.google.com/a/macros/siam.edu/s/AKfycbznOJI_Rpo_bfbWV-IZG_aTf0FnQJr2DffGJnfa6dTpWeKCooOprJxP8hJOqEfoY2GNgw/exec"; 
+    
+    let currentActiveId = "";
+    let html5QrcodeScanner;
+
+    function checkLogin() {
+      if (document.getElementById('passcodeInput').value === '555') {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('mainSection').classList.remove('hidden');
+        startCamera();
+      } else {
+        alert('รหัสผ่านไม่ถูกต้อง');
+      }
+    }
+
+    function startCamera() {
+      html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 12, qrbox: 220 });
+      html5QrcodeScanner.render(onScanSuccess);
+    }
+
+    function onScanSuccess(decodedText) {
+      if(decodedText && decodedText !== currentActiveId) {
+        document.getElementById('manualIdInput').value = decodedText;
+        fetchStudentData(decodedText);
+      }
+    }
+
+    function searchManual() {
+      const id = document.getElementById('manualIdInput').value.trim();
+      if(id) fetchStudentData(id);
+    }
+
+    // ฟังก์ชันสั่งคุยข้ามโดเมนไปหา Google App Script API
+    function fetchStudentData(studentId) {
+      showLoading(true);
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getStudentStatus", studentId: studentId })
+      })
+      .then(res => res.json())
+      .then(res => {
+        showLoading(false);
+        if(res.status === 'success') {
+          currentActiveId = res.studentId;
+          document.getElementById('resName').innerText = res.fullName;
+          document.getElementById('resId').innerText = "ID: " + res.studentId;
+          
+          updateButtonState('souvenirBtn', res.souvenir, "รับของที่ระลึก", "bg-blue-600", "✓ รับของที่ระลึกเรียบร้อยแล้ว");
+          updateButtonState('lunchBtn', res.lunch, "รับอาหารกลางวัน", "bg-yellow-600", "✓ รับอาหารกลางวันเรียบร้อยแล้ว");
+          
+          document.getElementById('resultBox').classList.remove('hidden');
+        } else {
+          alert("ไม่พบรหัสการลงทะเบียนนี้ในระบบ");
+          document.getElementById('resultBox').classList.add('hidden');
+        }
+      }).catch(err => { showLoading(false); alert("การเชื่อมต่อล้มเหลว: " + err); });
+    }
+
+    function updateButtonState(btnId, state, activeText, activeColor, successText) {
+      const btn = document.getElementById(btnId);
+      if(state === 'รับแล้ว') {
+        btn.disabled = true;
+        btn.className = "w-full bg-green-500 text-white py-3 rounded-lg font-medium cursor-not-allowed";
+        btn.innerHTML = successText;
+      } else {
+        btn.disabled = false;
+        btn.className = `w-full ${activeColor} text-white py-3 rounded-lg font-medium hover:opacity-90`;
+        btn.innerHTML = activeText;
+      }
+    }
+
+    function actionSubmit(type) {
+      if(!currentActiveId) return;
+      showLoading(true);
+      
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "scanAction", studentId: currentActiveId, actionType: type })
+      })
+      .then(res => res.json())
+      .then(response => {
+        showLoading(false);
+        alert(response.msg);
+        fetchStudentData(currentActiveId);
+      }).catch(err => { showLoading(false); alert("บันทึกล้มเหลว: " + err); });
+    }
+
+    function showLoading(isLoading) {
+      if(isLoading) {
+        Swal.fire({ title: 'กำลังประมวลผล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      } else {
+        Swal.close();
+      }
+    }
+  </script>
+</body>
+</html>
