@@ -172,7 +172,7 @@
       }
     }
 
-    function actionSubmit(type) {
+function actionSubmit(type) {
       if(!currentActiveId) return;
       showLoading(true);
       
@@ -183,10 +183,21 @@
       .then(res => res.json())
       .then(response => {
         showLoading(false);
-        // แสดงป๊อปอัปแจ้งผลสำเร็จแบบสวยงาม
-        Swal.fire({ icon: 'success', title: response.msg, timer: 1500, showConfirmButton: false });
-        fetchStudentData(currentActiveId);
-      }).catch(err => { showLoading(false); alert("บันทึกล้มเหลว: " + err); });
+        
+        if(response.status === 'success') {
+          // แจ้งเตือนสำเร็จด้วยเสียงหรือป๊อปอัป
+          Swal.fire({ icon: 'success', title: response.msg, timer: 1500, showConfirmButton: false });
+          // 🔄 ดึงข้อมูลจากชีตมาอัปเดตปุ่มบนหน้าจอให้กลายเป็นสีเขียวทันที
+          fetchStudentData(currentActiveId);
+        } else {
+          // หากเกิดการรับซ้ำ หรือเกิด error ให้แจ้งเตือนสีส้ม/แดง
+          Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: response.msg });
+          fetchStudentData(currentActiveId);
+        }
+      }).catch(err => { 
+        showLoading(false); 
+        Swal.fire({ icon: 'error', title: 'บันทึกล้มเหลว', text: 'กรุณาตรวจสอบอินเทอร์เน็ตหรือการ Deploy: ' + err }); 
+      });
     }
 
     function showLoading(isLoading) {
