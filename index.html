@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Dashboard - Camera Fixed</title>
+  <title>Staff Dashboard - Fast Scan</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
-    /* บังคับให้วิดีโอจากกล้องแสดงผลเต็มกล่อง ไม่จมหรือมืด */
-    #qr-reader video { width: 100% !important; height: auto !important; object-fit: cover; border-radius: 0.5rem; }
+    /* ปรับแต่งหน้าจอกล้องให้แสดงผลเต็มจอ ไม่มีตัวหนังสือภาษาอังกฤษกวนใจ */
+    #qr-reader { border: none !important; }
+    #qr-reader video { width: 100% !important; height: auto !important; object-fit: cover; border-radius: 0.75rem; }
+    #qr-reader__dashboard { display: none !important; } /* ซ่อนเมนูเลือกกล้องของไลบรารีทิ้งไปเลย */
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -17,29 +19,33 @@
   <!-- ส่วนที่ 1: ล็อกอิน (Passcode 555) -->
   <div id="loginSection" class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-100 text-center">
     <h2 class="text-2xl font-bold text-indigo-600 mb-1">เข้าสู่ระบบเจ้าหน้าที่</h2>
-    <p class="text-gray-400 text-sm mb-6">Staff Login (GitHub Hosted)</p>
+    <p class="text-gray-400 text-sm mb-6">Staff Login (Fast Scan Mode)</p>
     
     <div class="space-y-4">
       <input type="password" id="passcodeInput" placeholder="Enter Passcode (555)" 
              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-xl font-mono tracking-widest">
       <button onclick="checkLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition duration-200">
-        Login
+        เข้าสู่ระบบ / Login
       </button>
     </div>
   </div>
 
-  <!-- ส่วนที่ 2: หน้าหลักการสแกนผ่านกล้องสด -->
+  <!-- ส่วนที่ 2: หน้าหลักการสแกนผ่านกล้องหลังทันที -->
   <div id="mainSection" class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-100 hidden">
     <div class="text-center mb-4 border-b pb-3">
-      <h2 class="text-xl font-bold text-gray-800">ระบบสแกนคิวอาร์โค้ดหน้างาน</h2>
-      <p class="text-xs text-green-600 font-semibold">✓ ตรวจพบกล้องในระบบเรียบร้อย</p>
+      <h2 class="text-xl font-bold text-gray-800">สแกน QR Code หน้างาน</h2>
+      <p class="text-xs text-indigo-500 font-medium">ส่องกล้องไปที่ QR Code ของนักศึกษาได้เลย</p>
     </div>
 
-    <!-- พื้นที่แสดงกล้องสแกนจริง (ปรับให้มีขนาดขั้นต่ำรองรับภาพ) -->
-    <div id="qr-reader" class="w-full bg-black rounded-lg overflow-hidden border border-gray-200 mb-4 shadow-inner" style="min-height: 250px;"></div>
+    <!-- กล่องแสดงภาพจากกล้องหลัง (เปิดอัตโนมัติ) -->
+    <div class="relative bg-black rounded-xl overflow-hidden shadow-inner mb-4">
+      <div id="qr-reader" class="w-full" style="min-height: 280px;"></div>
+      <!-- เส้นเลเซอร์จำลองเพิ่มความเท่และเล็งง่าย -->
+      <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-red-500 opacity-60 animate-pulse"></div>
+    </div>
     
     <!-- ช่องป้อนรหัสสำรองกรณีพิมพ์มือ -->
-    <div class="space-y-2 mb-6">
+    <div class="space-y-2 mb-4">
       <div class="flex gap-2">
         <input type="text" id="manualIdInput" placeholder="หรือพิมพ์รหัสเอง เช่น A001" onkeypress="if(event.keyCode===13) searchManual()"
                class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-lg uppercase tracking-wider">
@@ -47,22 +53,23 @@
       </div>
     </div>
 
-    <!-- ผลลัพธ์ปุ่มกดทำรายการ -->
+    <!-- ผลลัพธ์ปุ่มกดทำรายการเมื่อสแกนเจอ -->
     <div id="resultBox" class="hidden border-t pt-4 space-y-4">
-      <div class="bg-indigo-50 p-4 rounded-lg">
-        <p class="text-xs text-indigo-500 font-bold uppercase">ข้อมูลผู้เข้าร่วมงาน</p>
-        <h3 id="resName" class="text-lg font-bold text-gray-800 mt-1">-</h3>
-        <p id="resId" class="text-sm text-gray-600 font-mono">-</p>
+      <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+        <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">ข้อมูลผู้เข้าร่วมงาน</p>
+        <h3 id="resName" class="text-xl font-bold text-gray-800 mt-0.5">-</h3>
+        <p id="resId" class="text-sm text-gray-600 font-mono font-bold">-</p>
       </div>
 
       <div class="space-y-3">
-        <button id="souvenirBtn" onclick="actionSubmit('souvenir')" class="w-full py-3 px-4 rounded-lg text-white font-medium shadow"></button>
-        <button id="lunchBtn" onclick="actionSubmit('lunch')" class="w-full py-3 px-4 rounded-lg text-white font-medium shadow"></button>
+        <button id="souvenirBtn" onclick="actionSubmit('souvenir')" class="w-full py-3.5 px-4 rounded-lg text-white font-medium shadow-md transition duration-150"></button>
+        <button id="lunchBtn" onclick="actionSubmit('lunch')" class="w-full py-3.5 px-4 rounded-lg text-white font-medium shadow-md transition duration-150"></button>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- ใช้สคริปต์สแกนคิวอาร์โค้ดเวอร์ชันเสถียร -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <script>
@@ -71,45 +78,55 @@
   
     
     let currentActiveId = "";
-    let html5QrcodeScanner;
+    let html5Qrcode;
 
     function checkLogin() {
       if (document.getElementById('passcodeInput').value === '555') {
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('mainSection').classList.remove('hidden');
-        // ใช้ setTimeout ช่วยดึงจังหวะเพื่อให้โครงสร้าง HTML เรนเดอร์เสร็จก่อนเปิดกล้อง
-        setTimeout(startCamera, 300);
+        // เปิดกล้องหลังทันทีหลังจากหน้าจอหลักแสดงผล
+        setTimeout(startFastCamera, 200);
       } else {
         alert('รหัสผ่านไม่ถูกต้อง');
       }
     }
 
-    function startCamera() {
-      // ตรวจสอบและเคลียร์實例เก่า (ถ้ามี) เพื่อป้องกันกล้องค้าง
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().catch(err => console.error(err));
-      }
+    function startFastCamera() {
+      // เรียกใช้งานคลาส Html5Qrcode ตรงๆ ไม่ผ่าน UI สำเร็จรูปของมัน เพื่อให้เปิดกล้องหลังทันที
+      html5Qrcode = new Html5Qrcode("qr-reader");
       
-      // เรียกใช้กล้องโดยตั้งค่าให้ยืดหยุ่นและรองรับการสแกนบนมือถือได้ดีขึ้น
-      html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { 
-        fps: 15, 
+      const config = { 
+        fps: 20, // ปรับความไวเฟรมเรตให้สแกนติดง่ายขึ้น
         qrbox: function(width, height) {
-          return { width: width * 0.7, height: width * 0.7 }; // ปรับขนาดกล่องสแกนตามหน้าจอมือถืออัตโนมัติ
-        },
-        aspectRatio: 1.0
+          return { width: width * 0.75, height: width * 0.75 };
+        }
+      };
+
+      // สั่งบังคับให้เรียกใช้กล้องหลัง { facingMode: "environment" } ทันทีตั้งแต่เริ่มเปิดหน้าเว็บ
+      html5Qrcode.start(
+        { facingMode: "environment" }, 
+        config, 
+        onScanSuccess
+      ).catch(err => {
+        console.error("ไม่สามารถเปิดกล้องหลังอัตโนมัติได้: ", err);
+        // หากมีปัญหาเรื่องกล้องหลัง ให้แสดงปุ่มกดเปิดกล้องปกติสำรองไว้
+        document.getElementById('qr-reader').innerHTML = `
+          <div class="p-4 text-center text-gray-500 text-sm">
+            <p>กล้องไม่เปิดอัตโนมัติเนื่องจากเบราว์เซอร์ติดบล็อกสิทธิ์</p>
+            <button onclick="location.reload()" class="mt-2 bg-indigo-600 text-white px-3 py-1 rounded text-xs">ลองกดโหลดหน้าเว็บใหม่อีกครั้ง</button>
+          </div>`;
       });
-      html5QrcodeScanner.render(onScanSuccess, onScanError);
     }
 
     function onScanSuccess(decodedText) {
+      // ถ้าเจอ QR code และรหัสไม่ซ้ำกับคนเดิมที่ค้างอยู่บนหน้าจอ ให้ค้นหาทันที
       if(decodedText && decodedText !== currentActiveId) {
+        // เพิ่มลูกเล่นสั่นมือถือเบาๆ เมื่อสแกนติด (ถ้าเครื่องรองรับ)
+        if (navigator.vibrate) navigator.vibrate(100);
+        
         document.getElementById('manualIdInput').value = decodedText;
         fetchStudentData(decodedText);
       }
-    }
-
-    function onScanError(err) {
-      // ปล่อยผ่านเพื่อให้สแกนเนอร์ทำงานต่อไปเรื่อยๆ จนกว่าจะเจอ QR Code
     }
 
     function searchManual() {
@@ -131,12 +148,12 @@
           document.getElementById('resName').innerText = res.fullName;
           document.getElementById('resId').innerText = "ID: " + res.studentId;
           
-          updateButtonState('souvenirBtn', res.souvenir, "รับของที่ระลึก", "bg-blue-600", "✓ รับของที่ระลึกเรียบร้อยแล้ว");
-          updateButtonState('lunchBtn', res.lunch, "รับอาหารกลางวัน", "bg-yellow-600", "✓ รับอาหารกลางวันเรียบร้อยแล้ว");
+          updateButtonState('souvenirBtn', res.souvenir, "รับของที่ระลึก", "bg-blue-600 hover:bg-blue-700", "✓ รับของที่ระลึกเรียบร้อยแล้ว");
+          updateButtonState('lunchBtn', res.lunch, "รับอาหารกลางวัน", "bg-yellow-600 hover:bg-yellow-700", "✓ รับอาหารกลางวันเรียบร้อยแล้ว");
           
           document.getElementById('resultBox').classList.remove('hidden');
         } else {
-          alert("ไม่พบรหัสการลงทะเบียนนี้ในระบบ");
+          alert("ไม่พบรหัสการลงทะเบียนนี้ในระบบ Data!");
           document.getElementById('resultBox').classList.add('hidden');
         }
       }).catch(err => { showLoading(false); alert("การเชื่อมต่อล้มเหลว: " + err); });
@@ -146,11 +163,11 @@
       const btn = document.getElementById(btnId);
       if(state === 'รับแล้ว') {
         btn.disabled = true;
-        btn.className = "w-full bg-green-500 text-white py-3 rounded-lg font-medium cursor-not-allowed";
+        btn.className = "w-full bg-green-500 text-white py-3.5 rounded-lg font-medium cursor-not-allowed text-center shadow";
         btn.innerHTML = successText;
       } else {
         btn.disabled = false;
-        btn.className = `w-full ${activeColor} text-white py-3 rounded-lg font-medium hover:opacity-90`;
+        btn.className = `w-full ${activeColor} text-white py-3.5 rounded-lg font-medium shadow-md transition duration-150 text-center`;
         btn.innerHTML = activeText;
       }
     }
@@ -166,7 +183,8 @@
       .then(res => res.json())
       .then(response => {
         showLoading(false);
-        alert(response.msg);
+        // แสดงป๊อปอัปแจ้งผลสำเร็จแบบสวยงาม
+        Swal.fire({ icon: 'success', title: response.msg, timer: 1500, showConfirmButton: false });
         fetchStudentData(currentActiveId);
       }).catch(err => { showLoading(false); alert("บันทึกล้มเหลว: " + err); });
     }
