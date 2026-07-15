@@ -25,7 +25,7 @@
 <input
     type="password"
     id="passcodeInput"
-    placeholder="Enter Passcode (555)"
+    placeholder="Enter Staff"
     onkeydown="if(event.key === 'Enter') checkLogin();"
     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-xl font-mono tracking-widest">
       <button onclick="checkLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition duration-200">
@@ -73,12 +73,12 @@
 </div>
 
     <!-- ผลลัพธ์ปุ่มกดทำรายการเมื่อสแกนเจอ -->
-    <div id="resultBox" class="hidden border-t pt-4 space-y-4">
-      <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-        <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">Participant Info</p>
-        <h3 id="resName" class="text-xl font-bold text-gray-800 mt-0.5">-</h3>
-        <p id="resId" class="text-sm text-gray-600 font-mono font-bold">-</p>
-      </div>
+<div id="resultBox" class="hidden border-t pt-4 space-y-4">
+  <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 text-center">
+    <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">Participant Info</p>
+    <h3 id="resName" class="text-xl font-bold text-gray-800 mt-0.5">-</h3>
+    <p id="resId" class="text-sm text-gray-600 font-mono font-bold">-</p>
+  </div>
 
       <div class="space-y-3">
         <button id="souvenirBtn" onclick="actionSubmit('souvenir')" class="w-full py-3.5 px-4 rounded-lg text-white font-medium shadow-md transition duration-150"></button>
@@ -184,8 +184,8 @@ function openInExternalBrowser() {
           document.getElementById('resName').innerText = res.fullName;
           document.getElementById('resId').innerText = "ID: " + res.studentId;
           
-          updateButtonState('souvenirBtn', res.souvenir, "รับกระเป๋า Bag Pickup 领取礼包", "bg-blue-600 hover:bg-blue-700", "✓ รับของที่ระลึกเรียบร้อยแล้ว");
-          updateButtonState('lunchBtn', res.lunch, "รับอาหารกลางวัน Lunch Pickup 领取午餐", "bg-yellow-600 hover:bg-yellow-700", "✓ รับอาหารกลางวันเรียบร้อยแล้ว");
+          updateButtonState('souvenirBtn', res.souvenir, "รับกระเป๋า Bag Pickup 领取礼包", "bg-yellow-200 hover:bg-yellow-400", "✓ รับเป๋าแล้ว Bag Received 已领取背包");
+          updateButtonState('lunchBtn', res.lunch, "รับอาหาร Lunch Pickup 领取午餐", "bg-yellow-200 hover:bg-yellow-400", "✓ รับอาหารแล้ว Lunch Received 已领取餐食");
           
           document.getElementById('resultBox').classList.remove('hidden');
         } else {
