@@ -184,9 +184,8 @@ function openInExternalBrowser() {
           document.getElementById('resName').innerText = res.fullName;
           document.getElementById('resId').innerText = "ID: " + res.studentId;
           
-          updateButtonState('souvenirBtn', res.souvenir, "รับกระเป๋า Bag Pickup 领取礼包", "bg-yellow-200 hover:bg-yellow-400", "✓ รับเป๋าแล้ว Bag Received 已领取背包");
-          updateButtonState('lunchBtn', res.lunch, "รับอาหาร Lunch Pickup 领取午餐", "bg-yellow-200 hover:bg-yellow-400", "✓ รับอาหารแล้ว Lunch Received 已领取餐食");
-          
+updateButtonState('souvenirBtn', res.souvenir, "รับกระเป๋า Bag Pickup 领取礼包", "bg-yellow-400 hover:bg-yellow-600 text-black border-2 border-dotted border-yellow-600", "✓ รับเป๋าแล้ว Bag Received 已领取背包");
+updateButtonState('lunchBtn', res.lunch, "รับอาหาร Lunch Pickup 领取午餐", "bg-yellow-400 hover:bg-yellow-600 text-black border-2 border-dotted border-yellow-600", "✓ รับอาหารแล้ว Lunch Received 已领取餐食");          
           document.getElementById('resultBox').classList.remove('hidden');
         } else {
           alert("ไม่พบรหัสการลงทะเบียนนี้ในระบบ Registration ID not found. 未找到此登记编号。!");
