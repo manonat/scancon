@@ -180,8 +180,8 @@ function fetchStudentData(studentId) {
           // แจ้งเตือนกรณีที่ยังไม่ได้ Check-in ลงทะเบียนเข้างาน
           Swal.fire({
             icon: 'warning',
-            title: 'ยังไม่ได้ลงทะเบียนเข้าร่วมงาน',
-            text: 'Not Registered Yet. / 尚未登记เข้าร่วม。',
+            title: 'ไอดีนี้ยังไม่ได้เช็คอิน',
+            text: 'Not Registered Yet. / 此账号尚未注册。',
             confirmButtonColor: '#eab308'
           });
           document.getElementById('resultBox').classList.add('hidden');
