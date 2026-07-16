@@ -18,7 +18,7 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-  <!-- ส่วนที่ 1: ล็อกอิน (Passcode 555) -->
+  <!-- ส่วนที่ 1: ล็อกอิน -->
   <div id="loginSection" class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-100 text-center">
     <h2 class="text-2xl font-bold text-indigo-600 mb-1">Staff 以员工身份登录</h2>
     <p class="text-gray-400 text-sm mb-6">Staff Login (Fast Scan Mode)</p>
@@ -97,18 +97,39 @@
     let currentActiveId = "";
     let html5Qrcode;
 
-    function checkLogin() {
-      if (document.getElementById('passcodeInput').value === '555') {
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('mainSection').classList.remove('hidden');
-        setTimeout(startFastCamera, 200);
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'รหัสผ่านไม่ถูกต้อง',
-          text: 'Incorrect password. / 密码错误。'
-        });
-      }
+function checkLogin() {
+      var enteredValue = document.getElementById('passcodeInput').value;
+      
+      // แสดง Loading ระหว่างรอระบบตรวจสอบความปลอดภัย
+      showLoading(true); 
+      
+      // ส่งรหัสผ่านไปเช็คที่ Google Apps Script ผ่านฟังก์ชัน verifyPasscode
+      google.script.run
+        .withSuccessHandler(function(response) {
+          showLoading(false);
+          if (response.status === "success") {
+            // ถ้ารหัสถูกต้อง ให้เปิดใช้งานหน้าหลัก
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+            setTimeout(startFastCamera, 200);
+          } else {
+            // ถ้ารหัสผิด แจ้งเตือนทันที
+            Swal.fire({
+              icon: 'error',
+              title: 'รหัสผ่านไม่ถูกต้อง',
+              text: 'Incorrect password. / 密码错误。'
+            });
+          }
+        })
+        .withFailureHandler(function(err) {
+          showLoading(false);
+          Swal.fire({
+            icon: 'error',
+            title: 'การเชื่อมต่อขัดข้อง',
+            text: 'System connection failed. / 系统连接失败。'
+          });
+        })
+        .verifyPasscode(enteredValue); // ส่งค่าที่พิมพ์ไปเช็ค
     }
 
     function startFastCamera() {
