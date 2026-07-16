@@ -8,12 +8,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
-    /* ปรับแต่งหน้าจอกล้องให้แสดงผลเต็มจอ ไม่มีตัวหนังสือภาษาอังกฤษกวนใจ */
     #qr-reader { border: none !important; }
     #qr-reader video { width: 100% !important; height: auto !important; object-fit: cover; border-radius: 0.75rem; }
-    #qr-reader__dashboard { display: none !important; } /* ซ่อนเมนูเลือกกล้องของไลบรารีทิ้งไปเลย */
+    #qr-reader__dashboard { display: none !important; }
+*, ::after, ::before {
+    border-color: rgb(43 102 219);
+}
   </style>
-<!-- </head> -->
+</head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
   <!-- ส่วนที่ 1: ล็อกอิน (Passcode 555) -->
@@ -22,12 +24,12 @@
     <p class="text-gray-400 text-sm mb-6">Staff Login (Fast Scan Mode)</p>
     
     <div class="space-y-4">
-<input
-    type="password"
-    id="passcodeInput"
-    placeholder="Enter Staff"
-    onkeydown="if(event.key === 'Enter') checkLogin();"
-    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-xl font-mono tracking-widest">
+      <input
+        type="password"
+        id="passcodeInput"
+        placeholder="Enter Staff"
+        onkeydown="if(event.key === 'Enter') checkLogin();"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-xl font-mono tracking-widest">
       <button onclick="checkLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition duration-200">
         เข้าสู่ระบบ 登录 / Login
       </button>
@@ -37,48 +39,47 @@
   <!-- ส่วนที่ 2: หน้าหลักการสแกนผ่านกล้องหลังทันที -->
   <div id="mainSection" class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-100 hidden">
     <div class="text-center mb-4 border-b pb-3">
-      <h2 class="text-xl font-bold text-gray-800">SCAN QR Code</h2>
+      <h2 class="text-xl font-bold text-blue-800">Participant QR Code Scanner</h2>
       <p class="text-xs text-indigo-500 font-medium">扫描二维码以获取登记人员信息</p>
     </div>
 
-    <!-- กล่องแสดงภาพจากกล้องหลัง (เปิดอัตโนมัติ) -->
+    <!-- กล่องแสดงภาพจากกล้องหลัง -->
     <div class="relative bg-black rounded-xl overflow-hidden shadow-inner mb-4">
-      <div id="qr-reader" class="w-full" style="min-height: 280px;"></div>
-      <!-- เส้นเลเซอร์จำลองเพิ่มความเท่และเล็งง่าย -->
+      <div id="qr-reader" class="w-full" style="min-height: 380px;"></div>
       <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-red-500 opacity-60 animate-pulse"></div>
     </div>
     
-<!-- ช่องป้อนรหัสสำรองกรณีพิมพ์มือ -->
-<div class="space-y-2 mb-4">
+    <!-- ช่องป้อนรหัสสำรองกรณีพิมพ์มือ -->
+    <div class="space-y-2 mb-4">
+      <p class="text-center text-gray-500 text-xs leading-relaxed">
+        💡 Unable to scan. Entered manually.<br>
+        如扫描失败，请在下方手输登记人员ID。<br>
+        ถ้าสแกนไม่ได้ ให้กรอกเลขไอดีผู้ลงทะเบียนในช่องข้างล่างนี้
+      </p>
 
-  <p class="text-center text-dark-400 text-sm">
-    Unable to scan. Entered manually.<br>
-    ถ้าสแกนไม่ได้ ให้ใส่เลขไอดีแทน</p>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          id="manualIdInput"
+          placeholder="A000"
+          onkeypress="if(event.keyCode===13) searchManual()"
+          class="w-48 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-lg uppercase tracking-wider">
 
-  <div class="flex gap-2">
-    <input
-      type="text"
-      id="manualIdInput"
-      placeholder="手输 = 手动输入"
-      onkeypress="if(event.keyCode===13) searchManual()"
-      class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-lg uppercase tracking-wider">
-
-    <button
-      onclick="searchManual()"
-      class="bg-gray-800 text-white px-5 py-2 rounded-lg text-sm">
-      Search 搜索
-    </button>
-  </div>
-
-</div>
+        <button
+          onclick="searchManual()"
+          class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-5 py-2 rounded-lg text-sm hover:bg-gray-700 transition">
+          Check-in
+        </button>
+      </div>
+    </div>
 
     <!-- ผลลัพธ์ปุ่มกดทำรายการเมื่อสแกนเจอ -->
-<div id="resultBox" class="hidden border-t pt-4 space-y-4">
-  <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 text-center">
-    <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">Participant Info</p>
-    <h3 id="resName" class="text-xl font-bold text-gray-800 mt-0.5">-</h3>
-    <p id="resId" class="text-sm text-gray-600 font-mono font-bold">-</p>
-  </div>
+    <div id="resultBox" class="hidden border-t pt-4 space-y-4">
+      <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 text-center">
+        <p class="text-base text-indigo-500 font-bold uppercase tracking-wider">Participant Info</p>
+        <h4 id="resName" class="text-lg font-bold text-gray-800 mt-0.5">-</h4>
+        <p id="resId" class="text-xl text-gray-600 font-mono font-bold">-</p>
+      </div>
 
       <div class="space-y-3">
         <button id="souvenirBtn" onclick="actionSubmit('souvenir')" class="w-full py-3.5 px-4 rounded-lg text-white font-medium shadow-md transition duration-150"></button>
@@ -88,13 +89,10 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- ใช้สคริปต์สแกนคิวอาร์โค้ดเวอร์ชันเสถียร -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <script>
-    // ⚠️ นำลิงก์ Web App URL ที่ได้จาก Google Apps Script มาใส่ตรงนี้ครับ
     const WEB_APP_URL = "https://script.google.com/a/macros/siam.edu/s/AKfycby9E-n5eowyDdAzlu1ppT-ssPMNKYQGzqK--w3HDXBGn5vCBOiX4NBk0pt7wcnyP8UE/exec"; 
-  
     
     let currentActiveId = "";
     let html5Qrcode;
@@ -103,74 +101,65 @@
       if (document.getElementById('passcodeInput').value === '555') {
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('mainSection').classList.remove('hidden');
-        // เปิดกล้องหลังทันทีหลังจากหน้าจอหลักแสดงผล
         setTimeout(startFastCamera, 200);
       } else {
-        alert('Incorrect password. รหัสผ่านไม่ถูกต้อง. 密码错误.');
+        Swal.fire({
+          icon: 'error',
+          title: 'รหัสผ่านไม่ถูกต้อง',
+          text: 'Incorrect password. / 密码错误。'
+        });
       }
     }
 
     function startFastCamera() {
-      // เรียกใช้งานคลาส Html5Qrcode ตรงๆ ไม่ผ่าน UI สำเร็จรูปของมัน เพื่อให้เปิดกล้องหลังทันที
       html5Qrcode = new Html5Qrcode("qr-reader");
-      
       const config = { 
-        fps: 20, // ปรับความไวเฟรมเรตให้สแกนติดง่ายขึ้น
+        fps: 20, 
         qrbox: function(width, height) {
           return { width: width * 0.85, height: width * 0.75 };
         }
       };
 
-      // สั่งบังคับให้เรียกใช้กล้องหลัง { facingMode: "environment" } ทันทีตั้งแต่เริ่มเปิดหน้าเว็บ
       html5Qrcode.start(
         { facingMode: "environment" }, 
         config, 
         onScanSuccess
       ).catch(err => {
-        console.error("ไม่สามารถเปิดกล้องหลังอัตโนมัติได้: ", err);
-        // หากมีปัญหาเรื่องกล้องหลัง ให้แสดงปุ่มกดเปิดกล้องปกติสำรองไว้
+        console.error("ไม่สามารถเปิดกล้องได้: ", err);
         document.getElementById('qr-reader').innerHTML = `
-          <div class="p-4 text-center text-gray-500 text-sm">
-            <p>If you see this message, the camera did not open automatically within LINE or WeChat. Please switch to open via an external browser instead. 如果看到此提示，说明在 LINE 或微信内摄像头未能自动打开。请切换至浏览器打开。ถ้าเห็นข้อความนี้ แสดงว่ากล้องไม่เปิดอัตโนมัติ ภายใต้LINE หรือ WeChat จงเปลี่ยนไปเปิดผ่าน Browser เท่านั้น </p>
-<button onclick="openInExternalBrowser()" class="mt-2 bg-indigo-600 text-white px-3 py-1 rounded text-xs">
-  Click.. เปลี่ยนไปเปิดในเบราว์เซอร์ของเครื่อง<br>Switch to open in default browser<br>切换至浏览器中打开
-</button>
+          <div class="p-4 text-center text-gray-500 text-xs leading-relaxed">
+            <p>Camera access denied within LINE/WeChat. Please open this link in an external browser or enable camera permissions in settings.</p>
+            <p class="mt-1">如果看到此提示，说明您的设备相机在 LINE 或微信中被设置为禁止自动开启。请尝试复制链接并在其他浏览器中打开。</p>
+            <p class="mt-1">ถ้าเห็นข้อความนี้ แสดงว่ากล้องในอุปกรณ์ของท่านถูกตั้งค่าไว้ไม่ให้เปิดอัตโนมัติ ภายใต้ LINE หรือ WeChat ลองเปิดผ่าน Browser อื่นๆ</p>
+            <button onclick="openInExternalBrowser()" class="mt-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white px-4 py-2 rounded-lg text-xs font-medium">
+             Click here<br>ลองเปลี่ยนไปเปิดในเบราว์เซอร์ของเครื่อง<br>Try opening this in your device's browser.<br> 请尝试使用设备的浏览器打开。
+            </button>
           </div>`;
       });
     }
 
-function openInExternalBrowser() {
-  const currentUrl = window.location.href;
-  
-  // สร้าง URL ใหม่ที่มีการต่อท้ายเพื่อให้ LINE ยอมเปิดข้างนอก
-  let targetUrl = currentUrl;
-  if (currentUrl.includes('?')) {
-    targetUrl += '&openExternalBrowser=1';
-  } else {
-    targetUrl += '?openExternalBrowser=1';
-  }
-  
-  window.location.href = targetUrl;
-}
-
+    function openInExternalBrowser() {
+      const currentUrl = window.location.href;
+      let targetUrl = currentUrl + (currentUrl.includes('?') ? '&' : '?') + 'openExternalBrowser=1';
+      window.location.href = targetUrl;
+    }
 
     function onScanSuccess(decodedText) {
-      // ถ้าเจอ QR code และรหัสไม่ซ้ำกับคนเดิมที่ค้างอยู่บนหน้าจอ ให้ค้นหาทันที
-      if(decodedText && decodedText !== currentActiveId) {
-        // เพิ่มลูกเล่นสั่นมือถือเบาๆ เมื่อสแกนติด (ถ้าเครื่องรองรับ)
+      if(decodedText && decodedText.trim() !== currentActiveId) {
         if (navigator.vibrate) navigator.vibrate(100);
-        
-        document.getElementById('manualIdInput').value = decodedText;
-        fetchStudentData(decodedText);
+        document.getElementById('manualIdInput').value = decodedText.trim();
+        fetchStudentData(decodedText.trim());
       }
     }
 
     function searchManual() {
       const id = document.getElementById('manualIdInput').value.trim();
-      if(id) fetchStudentData(id);
+      if(id) {
+        fetchStudentData(id);
+      }
     }
 
-    function fetchStudentData(studentId) {
+function fetchStudentData(studentId) {
       showLoading(true);
       fetch(WEB_APP_URL, {
         method: "POST",
@@ -184,14 +173,33 @@ function openInExternalBrowser() {
           document.getElementById('resName').innerText = res.fullName;
           document.getElementById('resId').innerText = "ID: " + res.studentId;
           
-updateButtonState('souvenirBtn', res.souvenir, "รับกระเป๋า Bag Pickup 领取礼包", "bg-yellow-400 hover:bg-yellow-600 text-black border-2 border-dotted border-yellow-600", "✓ รับเป๋าแล้ว Bag Received 已领取背包");
-updateButtonState('lunchBtn', res.lunch, "รับอาหาร Lunch Pickup 领取午餐", "bg-yellow-400 hover:bg-yellow-600 text-black border-2 border-dotted border-yellow-600", "✓ รับอาหารแล้ว Lunch Received 已领取餐食");          
+          updateButtonState('souvenirBtn', res.souvenir, "รับกระเป๋า Bag Pickup 领取礼包", "bg-yellow-500 hover:bg-yellow-600 text-white", "✓ รับเป๋าแล้ว Bag Received 已领取背包");
+          updateButtonState('lunchBtn', res.lunch, "รับอาหาร Lunch Pickup 领取午餐", "bg-yellow-500 hover:bg-yellow-600 text-white", "✓ รับอาหารแล้ว Lunch Received 已领取餐食");          
           document.getElementById('resultBox').classList.remove('hidden');
+        } else if(res.status === 'not_registered') {
+          // แจ้งเตือนกรณีที่ยังไม่ได้ Check-in ลงทะเบียนเข้างาน
+          Swal.fire({
+            icon: 'warning',
+            title: 'ยังไม่ได้ลงทะเบียนเข้าร่วมงาน',
+            text: 'Not Registered Yet. / 尚未登记เข้าร่วม。',
+            confirmButtonColor: '#eab308'
+          });
+          document.getElementById('resultBox').classList.add('hidden');
         } else {
-          alert("ไม่พบรหัสการลงทะเบียนนี้ในระบบ Registration ID not found. 未找到此登记编号。!");
+          // แจ้งเตือนข้อผิดพลาดอื่นๆ
+            Swal.fire({
+            icon: 'info',
+            title: 'กรอกไอดีผิดชัวร์<br>No data found',
+            html: 'ติดต่อ Admin<br>Please contact admin. 请联系管理员。',
+            confirmButtonColor: '#448edd'
+          });
           document.getElementById('resultBox').classList.add('hidden');
         }
-      }).catch(err => { showLoading(false); alert("การเชื่อมต่อล้มเหลว Connection failed. 连接失败。: " + err); });
+      })
+      .catch(err => { 
+        showLoading(false); 
+        Swal.fire({ icon: 'error', title: 'การเชื่อมต่อล้มเหลว', text: 'Connection failed: ' + err }); 
+      });
     }
 
     function updateButtonState(btnId, state, activeText, activeColor, successText) {
@@ -202,12 +210,12 @@ updateButtonState('lunchBtn', res.lunch, "รับอาหาร Lunch Pickup 
         btn.innerHTML = successText;
       } else {
         btn.disabled = false;
-        btn.className = `w-full ${activeColor} text-white py-3.5 rounded-lg font-medium shadow-md transition duration-150 text-center`;
+        btn.className = `w-full ${activeColor} py-3.5 rounded-lg font-medium shadow-md transition duration-150 text-center`;
         btn.innerHTML = activeText;
       }
     }
 
-function actionSubmit(type) {
+    function actionSubmit(type) {
       if(!currentActiveId) return;
       showLoading(true);
       
@@ -218,20 +226,17 @@ function actionSubmit(type) {
       .then(res => res.json())
       .then(response => {
         showLoading(false);
-        
         if(response.status === 'success') {
-          // แจ้งเตือนสำเร็จด้วยเสียงหรือป๊อปอัป
           Swal.fire({ icon: 'success', title: response.msg, timer: 1500, showConfirmButton: false });
-          // 🔄 ดึงข้อมูลจากชีตมาอัปเดตปุ่มบนหน้าจอให้กลายเป็นสีเขียวทันที
           fetchStudentData(currentActiveId);
         } else {
-          // หากเกิดการรับซ้ำ หรือเกิด error ให้แจ้งเตือนสีส้ม/แดง
           Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: response.msg });
           fetchStudentData(currentActiveId);
         }
-      }).catch(err => { 
+      })
+      .catch(err => { 
         showLoading(false); 
-        Swal.fire({ icon: 'error', title: 'บันทึกล้มเหลว', text: 'กรุณาตรวจสอบอินเทอร์เน็ตหรือการ Deploy: ' + err }); 
+        Swal.fire({ icon: 'error', title: 'บันทึกล้มเหลว', text: 'กรุณาตรวจสอบอินเทอร์เน็ต: ' + err }); 
       });
     }
 
