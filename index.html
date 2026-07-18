@@ -226,8 +226,8 @@
         } else if(res.status === 'not_registered') {
           Swal.fire({
             icon: 'warning',
-            title: 'ไอดีนี้ยังไม่ได้เช็คอิน',
-            text: 'ให้เขากดเลือกชื่อตัวเองแล้วกดปุ่มเช็คอินให้เสร็จก่อนนะ This ID has not checked in yet. Please select a name and click Check-In first. 此账号尚未签到。请先选择姓名，然后点击 签到（Check-In）。',
+            title: 'No Data / Not Checked In',
+            text: 'ไม่มี หรือยังไม่ได้เช็คอิน 无数据 / 未签到',
             confirmButtonColor: '#eab308'
           });
           document.getElementById('resultBox').classList.add('hidden');
