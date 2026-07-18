@@ -92,6 +92,29 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <script>
+
+// <!-- 1. นำเข้า Firebase SDK (เวอร์ชันเสถียรสำหรับใช้งานบน HTML หน้าเดียว) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+  // 2. ใส่ค่า Config ของคุณที่ได้มาเมื่อสักครู่
+  const firebaseConfig = {
+    apiKey: "AIzaSyCjSHF5uG9r1mT1QXkueE6pl5tS4XpA-QA",
+    authDomain: "conscan-db.firebaseapp.com",
+    databaseURL: "https://conscan-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "conscan-db",
+    storageBucket: "conscan-db.firebasestorage.app",
+    messagingSenderId: "1098657120055",
+    appId: "1:1098657120055:web:cd1c1263dbb061ee75e4b2"
+  };
+
+  // 3. เริ่มต้นทำงานฐานข้อมูล
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  // สิ้นสุด นำเข้า Firebase SDK
+
+
     const WEB_APP_URL = "https://script.google.com/a/macros/siam.edu/s/AKfycby9E-n5eowyDdAzlu1ppT-ssPMNKYQGzqK--w3HDXBGn5vCBOiX4NBk0pt7wcnyP8UE/exec"; 
     
     let currentActiveId = "";
@@ -241,30 +264,36 @@ function fetchStudentData(studentId) {
       }
     }
 
-    function actionSubmit(type) {
-      if(!currentActiveId) return;
-      showLoading(true);
+function actionSubmit(type) {
+  if(!currentActiveId) return;
+  showLoading(true);
+  
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "scanAction", studentId: currentActiveId, actionType: type })
+  })
+  .then(res => res.json())
+  .then(response => {
+    showLoading(false);
+    if(response.status === 'success') {
       
-      fetch(WEB_APP_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "scanAction", studentId: currentActiveId, actionType: type })
-      })
-      .then(res => res.json())
-      .then(response => {
-        showLoading(false);
-        if(response.status === 'success') {
-          Swal.fire({ icon: 'success', title: response.msg, timer: 1500, showConfirmButton: false });
-          fetchStudentData(currentActiveId);
-        } else {
-          Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: response.msg });
-          fetchStudentData(currentActiveId);
-        }
-      })
-      .catch(err => { 
-        showLoading(false); 
-        Swal.fire({ icon: 'error', title: 'บันทึกล้มเหลว', text: 'กรุณาตรวจสอบอินเทอร์เน็ต: ' + err }); 
-      });
+      // 🔥 บันทึกสถานะลง Firebase ทันทีที่ลง Sheet สำเร็จ
+      // ถ้ากดปุ่ม souvenir ให้บันทึกเป็นของ souvenir, ถ้าเป็นอันอื่นบันทึกเป็น lunch
+      let fbKey = (type === 'souvenir') ? 'souvenir' : 'lunch';
+      database.ref('users/' + currentActiveId + '/' + fbKey).set('รับแล้ว');
+
+      Swal.fire({ icon: 'success', title: response.msg, timer: 1500, showConfirmButton: false });
+      fetchStudentData(currentActiveId);
+    } else {
+      Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: response.msg });
+      fetchStudentData(currentActiveId);
     }
+  })
+  .catch(err => { 
+    showLoading(false); 
+    Swal.fire({ icon: 'error', title: 'บันทึกล้มเหลว', text: 'กรุณาตรวจสอบอินเทอร์เน็ต: ' + err }); 
+  });
+}
 
     function showLoading(isLoading) {
       if(isLoading) {
